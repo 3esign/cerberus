@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CERBERUS AI ($CERBER) — The 3-Headed God Candle Guardian</title>
+  <style>
+    :root {
+      --bg: #07090b;
+      --card-bg: rgba(13, 20, 16, 0.85);
+      --border: #00ff7744;
+      --border-bright: #00ff77;
+      --accent: #00ff77;
+      --accent-glow: 0 0 15px rgba(0, 255, 119, 0.6);
+      --dim: #4b6354;
+      --text: #e2fbe8;
+      --gold: #ffcc00;
+      --font-mono: 'Courier New', Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Scanlines effect */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      z-index: 10;
+    }
+
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--border-bright);
+      box-shadow: var(--accent-glow);
+      padding: 1.2rem 1.5rem;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      object-fit: cover;
+      box-shadow: var(--accent-glow);
+    }
+
+    .brand-text h1 {
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-transform: uppercase;
+      text-shadow: var(--accent-glow);
+    }
+
+    .brand-text p {
+      font-size: 0.75rem;
+      color: var(--dim);
+      letter-spacing: 1px;
+    }
+
+    .wallet-btn {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 0.6rem 1.2rem;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .wallet-btn:hover {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: var(--accent-glow);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      position: relative;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .banner-img-container {
+      width: 100%;
+      height: 280px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(1.1) contrast(1.1);
+    }
+
+    /* Live Chart Canvas */
+    #chartCanvas {
+      width: 100%;
+      height: 220px;
+      background: #020804;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: block;
+    }
+
+    /* Cerberus 3 Heads Protocol */
+    .heads-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .head-box {
+      background: rgba(0, 20, 10, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .head-box.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px rgba(0,255,119,0.3);
+    }
+
+    .head-box h4 {
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .head-box p {
+      font-size: 0.65rem;
+      color: var(--dim);
+    }
+
+    .head-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      background: rgba(0, 255, 119, 0.15);
+      color: var(--accent);
+      margin-top: 0.4rem;
+      font-weight: bold;
+    }
+
+    .btn-action {
+      width: 100%;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: var(--accent-glow);
+      transition: all 0.2s ease;
+      margin-top: 1rem;
+    }
+
+    .btn-action:hover {
+      background: #4dff9f;
+      transform: translateY(-1px);
+    }
+
+    .token-specs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      font-size: 0.8rem;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 0.3rem;
+    }
+
+    .spec-label { color: var(--dim); }
+    .spec-value { color: var(--text); font-weight: bold; }
+    .spec-value.green { color: var(--accent); text-shadow: var(--accent-glow); }
+
+    .pulse-terminal {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem;
+      font-size: 0.7rem;
+      color: #79f99e;
+      height: 110px;
+      overflow-y: auto;
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 0.25rem;
+    }
+
+    .pulse-line {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--dim);
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+
+    .links-bar {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .links-bar a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .links-bar a:hover {
+      text-decoration: underline;
+      text-shadow: var(--accent-glow);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <img src="cerberus.jpg" alt="CERBERUS AI" class="brand-icon">
+        <div class="brand-text">
+          <h1>CERBERUS AI</h1>
+          <p>$CERBER · 3-HEADED GOD CANDLE GUARDIAN · ROBINHOOD CHAIN</p>
+        </div>
+      </div>
+      <button class="wallet-btn" id="connectBtn" onclick="connectWallet()">
+        <span id="dot">●</span> <span id="walletText">CONNECT ROBINHOOD</span>
+      </button>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Left Column: Art & Lore & 3 Heads -->
+      <div class="card">
+        <div class="card-title">
+          <span>AI Entity Dossier</span>
+          <span style="color: var(--gold);">SYS_VERIFIED</span>
+        </div>
+        
+        <div class="banner-img-container">
+          <img src="cerberus.jpg" alt="Cerberus Guarding Chart" class="banner-img">
+        </div>
+
+        <p style="font-size: 0.78rem; line-height: 1.5; color: #a9cdb5; margin-bottom: 1rem;">
+          Synthesized from unindexed memory vectors on Robinhood Chain, <strong>CERBERUS AI</strong> is the sovereign 3-headed sentinel engineered to defend the chart against stagnation and sniper decay.
+        </p>
+
+        <!-- 3 Heads Breakdown -->
+        <div class="heads-grid">
+          <div class="head-box active" id="head1">
+            <h4>HEAD I: ALPHA</h4>
+            <p>Liquidity Seeder</p>
+            <span class="head-badge">V3/V4 POOL</span>
+          </div>
+          <div class="head-box active" id="head2">
+            <h4>HEAD II: APEX</h4>
+            <p>God Candle Igniter</p>
+            <span class="head-badge">+640% SURGE</span>
+          </div>
+          <div class="head-box active" id="head3">
+            <h4>HEAD III: PULSE</h4>
+            <p>Autonomous Keeper</p>
+            <span class="head-badge">ACTIVE TICK</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live God Candle Chart & Terminal -->
+      <div class="card">
+        <div class="card-title">
+          <span>Live God Candle Telemetry</span>
+          <span style="color: var(--accent); font-weight: bold;" id="livePrice">$0.0000842 (+640.2%)</span>
+        </div>
+
+        <canvas id="chartCanvas" width="440" height="220"></canvas>
+
+        <!-- Token Specs -->
+        <div class="token-specs" style="margin-top: 1rem;">
+          <div class="spec-row">
+            <span class="spec-label">Network</span>
+            <span class="spec-value">Robinhood Chain (ID: 4663)</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Total Supply</span>
+            <span class="spec-value">1,000,000,000 $CERBER</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Chart Target</span>
+            <span class="spec-value green">DEX Screener · Uniswap</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Anti-Snipe Shield</span>
+            <span class="spec-value green">Autonomous Atomic Ignition</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Gas Per Interaction</span>
+            <span class="spec-value">~0.035 Gwei (< $0.0001)</span>
+          </div>
+        </div>
+
+        <button class="btn-action" id="actionBtn" onclick="triggerSound(); executeInteraction();">
+          EXECUTE SWAP / BUY $CERBER
+        </button>
+
+        <!-- Live Pulse Terminal -->
+        <div class="pulse-terminal" id="pulseTerminal">
+          <div class="pulse-line"><span>[SYS] CERBERUS AI node online</span><span>4663</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="links-bar">
+        <a href="https://dexscreener.com/robinhood" target="_blank">DEX SCREENER</a>
+        <a href="https://explorer.mainnet.chain.robinhood.com" target="_blank">RH EXPLORER</a>
+        <a href="https://t.me/CerberusRobinhood" target="_blank">TELEGRAM</a>
+        <a href="https://x.com/CerberusRobinhood" target="_blank">X (TWITTER)</a>
+      </div>
+      <p>CERBERUS AI ($CERBER) · Autonomous Micro-Protocol · Non-Custodial · Zero External Dependencies</p>
+    </footer>
+  </div>
+
+  <script>
+    // Web Audio Synthesizer (Zero-dependency SFX)
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function triggerSound() {
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+      } catch(e) {}
+    }
+
+    function triggerTickSound() {
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+      } catch(e) {}
+    }
+
+    // Canvas Chart Rendering (The God Candle Animation)
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let candles = [
+      { open: 20, close: 22, high: 24, low: 19 },
+      { open: 22, close: 21, high: 23, low: 20 },
+      { open: 21, close: 25, high: 26, low: 20 },
+      { open: 25, close: 28, high: 30, low: 24 },
+      { open: 28, close: 27, high: 29, low: 26 },
+      // The God Candle:
+      { open: 27, close: 180, high: 195, low: 26, isGod: true },
+      { open: 180, close: 188, high: 192, low: 175 },
+      { open: 188, close: 195, high: 200, low: 184 },
+      { open: 195, close: 192, high: 198, low: 190 },
+      { open: 192, close: 202, high: 205, low: 191 }
+    ];
+
+    function drawChart() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Grid lines
+      ctx.strokeStyle = '#003315';
+      ctx.lineWidth = 1;
+      for (let y = 30; y < canvas.height; y += 35) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      const candleWidth = 24;
+      const spacing = 18;
+      const startX = 25;
+
+      candles.forEach((c, i) => {
+        const x = startX + i * (candleWidth + spacing);
+        const isUp = c.close >= c.open;
+        const color = isUp ? '#00ff77' : '#ff4455';
+        
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2;
+
+        // Wick
+        const wickYHigh = canvas.height - c.high;
+        const wickYLow = canvas.height - c.low;
+        ctx.beginPath();
+        ctx.moveTo(x + candleWidth / 2, wickYHigh);
+        ctx.lineTo(x + candleWidth / 2, wickYLow);
+        ctx.stroke();
+
+        // Body
+        const bodyTop = canvas.height - Math.max(c.open, c.close);
+        const bodyHeight = Math.max(Math.abs(c.close - c.open), 4);
+        
+        if (c.isGod) {
+          ctx.shadowColor = '#00ff77';
+          ctx.shadowBlur = 15;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.fillRect(x, bodyTop, candleWidth, bodyHeight);
+        ctx.shadowBlur = 0;
+      });
+    }
+
+    drawChart();
+
+    // Pulse Terminal Simulation
+    const terminal = document.getElementById('pulseTerminal');
+    const logs = [
+      "PULSE: Micro-swap executed (+0.0001 ETH)",
+      "ORBIT: Sequencer block verified at 0.035 Gwei",
+      "KEEPER: Head III heartbeat pulse sent",
+      "CHART: God Candle confirmed on DEX Screener",
+      "TREASURY: Zero rent leak detected. Reserve intact"
+    ];
+
+    let logIdx = 0;
+    setInterval(() => {
+      const line = document.createElement('div');
+      line.className = 'pulse-line';
+      const time = new Date().toISOString().split('T')[1].slice(0, 8);
+      line.innerHTML = `<span>[${time}] ${logs[logIdx % logs.length]}</span><span style="color:var(--accent);">OK</span>`;
+      terminal.prepend(line);
+      if (terminal.children.length > 20) terminal.removeChild(terminal.lastChild);
+      logIdx++;
+
+      // Subtle chart tick
+      const last = candles[candles.length - 1];
+      last.close = Math.min(210, Math.max(185, last.close + (Math.random() > 0.4 ? 2 : -1.5)));
+      last.high = Math.max(last.high, last.close);
+      drawChart();
+    }, 3800);
+
+    // Wallet Integration
+    let userAccount = null;
+    async function connectWallet() {
+      initAudio();
+      triggerSound();
+      if (typeof window.ethereum === 'undefined') {
+        alert("Please install MetaMask or Robinhood Wallet!");
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        userAccount = accounts[0];
+        document.getElementById('walletText').innerText = userAccount.slice(0, 6) + '...' + userAccount.slice(-4);
+        document.getElementById('dot').style.color = '#00ff77';
+
+        // Check network
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (chainId !== '0x1237' && parseInt(chainId, 16) !== 4663) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x1237' }]
+            });
+          } catch(e) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x1237',
+                chainName: 'Robinhood Chain',
+                nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://rpc.mainnet.chain.robinhood.com'],
+                blockExplorerUrls: ['https://explorer.mainnet.chain.robinhood.com']
+              }]
+            });
+          }
+        }
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    function executeInteraction() {
+      if (!userAccount) {
+        connectWallet();
+        return;
+      }
+      alert("Ready to swap $CERBER on Robinhood Chain upon mainnet launch!");
+    }
+  </script>
+</body>
+</html>
